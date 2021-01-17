@@ -13,6 +13,8 @@ Mat detected_edges;	//윤곽선으로 만든 영상 저장하는 변수
 int lowThreshold = 36;	//낮은 임계값
 int highThreshold = 0;	//높은 임계값
 int maxX = 0, minX = 0, maxY = 0, minY = 0;	//윤곽선에 해당하는 픽셀 중 가장 밑, 가장 위에 있는 픽셀좌표를 저장 
+int rightX = 0, rightY = 0, leftX = 0, leftY = 0;	//윤곽선에 해당하는 픽셀 중 가장 왼쪽, 가장 오른쪽에 있는 픽셀좌표를 저장
+int width = 0, height = 0;
 
 
 int main(int argc, char** argv) {
@@ -35,6 +37,13 @@ int main(int argc, char** argv) {
 	maxY = 0;
 	minY = detected_edges.rows;
 
+	rightX = 0;
+	leftX = detected_edges.cols;
+
+
+	std::cout << "rows : " << detected_edges.rows << ", clos : " << detected_edges.cols << '\n';	//변수값 출력
+
+
 	for (int y = 0; y < detected_edges.rows; y++) {			// 윤곽선중 가장 위에 있는 픽셀을 찾기 위해 모든 픽셀을 검사하고 
 		for (int x = 0; x < detected_edges.cols; x++) {		// 윤곽선에 해당하는 픽셀의 좌표가 maxY변수보다 크면
 			if (detected_edges.at<uchar>(y, x) == 255) {	// 그 좌표를 변수에 초기화 해줌
@@ -50,7 +59,15 @@ int main(int argc, char** argv) {
 				if (y <= minY) {
 					minY = y;
 					minX = x;
+				}
 
+				if (x >= rightX) {
+					rightX = x;
+					rightY = y;
+				}
+				if (x <= leftX) {
+					leftX = x;
+					leftY = y;
 				}
 			}
 		}
@@ -66,7 +83,19 @@ int main(int argc, char** argv) {
 	src2.at<Vec3b>(maxY, maxX)[1] = 0; // BGR 순서 
 	src2.at<Vec3b>(maxY, maxX)[2] = 255;
 
-	std::cout << "min x : " << minX << ", min y : " << minY << ", max x : " << maxX << "max y :" << maxY;	//변수값 출력
+	src2.at<Vec3b>(rightY, rightX)[0] = 0; // 해당 픽셀을 빨간색으로 변경 
+	src2.at<Vec3b>(rightY, rightX)[1] = 0; // BGR 순서 
+	src2.at<Vec3b>(rightY, rightX)[2] = 255;
+
+	src2.at<Vec3b>(leftY, leftX)[0] = 0; // 해당 픽셀을 팔간색으로 변경 
+	src2.at<Vec3b>(leftY, leftX)[1] = 0; // BGR 순서 
+	src2.at<Vec3b>(leftY, leftX)[2] = 255;
+
+	width = rightX - leftX;
+	height = maxY - minY;
+	std::cout << "min x : " << minX << ", min y : " << minY << '\n' << "max x : " << maxX << ", max y : " << maxY << '\n';	//변수값 출력
+	std::cout << "right x : " << rightX << ", right y : " << rightY << '\n'<<"left x : " << leftX << ", left y : " << leftY<<'\n';	//변수값 출력
+	std::cout << "bottle width : " << width << ", bottle height : " << height;
 
 	namedWindow("Canny Edge", WINDOW_AUTOSIZE);	// 출력창 생성
 	imshow("Canny Edge", detected_edges);	// 윤곽선처리한 영상 출력
